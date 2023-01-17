@@ -15,7 +15,7 @@ end
 % importation des images de requête dans une liste
 img_path = './dbq/';
 img_list = glob([img_path, '*.gif']);
-t = tic();
+t= tic()
 
 % pour chaque image de la liste...
 for im = 1:numel(img_list)
@@ -50,14 +50,36 @@ end
 end
 
 function [fd,r,m,poly] = compute_fd(img)
-N = 512; % à modifier !!!
-M = 512; % à modifier !!!
-h = size(img,1);
-w = size(img,2);
-m = [w/2 h/2]; % à modifier !!!
+N = 512; % XXX
+M = 512; % XXX
+h = size(img,1); % Hauteur de l'image, nombre de lignes.
+w = size(img,2); % Largeur de l'image, nombre de colonnes.
+m = calcul_barycentre(img,h,w); % Barycentre de l'image.
 t = linspace(0,2*pi,100);
 R = min(h,w)/2;
 poly = [m(1)+R*cos(t'), m(2)+R*sin(t')]; % à modifier !!!
 r = R*ones(1,N); % à modifier !!!
 fd = rand(1,M); % à modifier !!!
+end
+
+% Calcul du barycentre d'une image.
+function m = calcul_barycentre(img, h, w)
+x = 0;
+y = 0;
+cpt = 0;
+% On parcourt la matrice de l'image.
+for i = 1 : h
+    for j = 1 : w
+        % Si le pixel est blanc .
+        if img(i,j)
+            % On ajoute les coordonnées à x et y et on incrémente le
+            % compteur.
+            x=x+i;
+            y=y+j;
+            cpt=cpt+1;
+        end
+    end
+end
+% On créé le vecteur ligne de taille 2.
+m = round([x, y]/cpt);
 end
