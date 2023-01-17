@@ -15,14 +15,14 @@ end
 % importation des images de requête dans une liste
 img_path = './dbq/';
 img_list = glob([img_path, '*.gif']);
-t= tic()
+t = tic() % Useless ???
 
 % pour chaque image de la liste...
 for im = 1:numel(img_list)
 
     % calcul du descripteur de Fourier de l'image
     img = logical(imread(img_list{im}));
-    [fd,r,m,poly] = compute_fd(img);
+    [fd, r, m, poly] = compute_fd(img);
 
     % calcul et tri des scores de distance aux descripteurs de la base
     for i = 1:length(fd_db)
@@ -34,14 +34,14 @@ for im = 1:numel(img_list)
     close all;
     figure(1);
     top = 5; % taille du top-rank affiché
-    subplot(2,top,1);
+    subplot(2, top, 1);
     imshow(img); hold on;
-    plot(m(1),m(2),'+b'); % affichage du barycentre
-    plot(poly(:,1),poly(:,2),'v-g','MarkerSize',1,'LineWidth',1); % affichage du contour calculé
-    subplot(2,top,2:top);
+    plot(m(1), m(2), '+b'); % affichage du barycentre
+    plot(poly(:,1), poly(:,2), 'v-g', 'MarkerSize', 1, 'LineWidth', 1); % affichage du contour calculé
+    subplot(2, top, 2:top);
     plot(r); % affichage du profil de forme
     for i = 1:top
-        subplot(2,top,top+i);
+        subplot(2, top, top + i);
         imshow(img_db{I(i)}); % affichage des top plus proches images
     end
     drawnow();
@@ -49,17 +49,16 @@ for im = 1:numel(img_list)
 end
 end
 
-function [fd,r,m,poly] = compute_fd(img)
-N = 512; % XXX
-M = 512; % XXX
-h = size(img,1); % Hauteur de l'image, nombre de lignes.
-w = size(img,2); % Largeur de l'image, nombre de colonnes.
-m = calcul_barycentre(img,h,w); % Barycentre de l'image.
-t = linspace(0,2*pi,100);
-R = min(h,w)/2;
-poly = [m(1)+R*cos(t'), m(2)+R*sin(t')]; % à modifier !!!
-r = R*ones(1,N); % à modifier !!!
-fd = rand(1,M); % à modifier !!!
+function [fd, r, m, poly] = compute_fd(img)
+N = 200; % N valeurs d'un angle t.
+M = 512; % M premiers coefficients du vecteur |R(f)|/|R(0)|.
+h = size(img, 1); % Hauteur de l'image, nombre de lignes.
+w = size(img, 2); % Largeur de l'image, nombre de colonnes.
+m = calcul_barycentre(img, h, w); % Barycentre de l'image.
+t = linspace(0, 2 * pi, N); % Génération des angles à parcourir.
+poly = calcul_contours(img, m, t); % Contours de l'image.
+r = norm(m - poly);
+fd = rand(1,M); 
 end
 
 % Calcul du barycentre d'une image.
@@ -72,14 +71,35 @@ for i = 1 : h
     for j = 1 : w
         % Si le pixel est blanc .
         if img(i,j)
-            % On ajoute les coordonnées à x et y et on incrémente le
+            % On jajoute les coordonnées à x et y et on incrémente le
             % compteur.
-            x=x+i;
-            y=y+j;
-            cpt=cpt+1;
+            x = x + j;
+            y = y + i;
+            cpt = cpt + 1;
         end
     end
 end
 % On créé le vecteur ligne de taille 2.
-m = round([x, y]/cpt);
+m = round([x, y] / cpt);
+end
+
+% Calcul des contours de la forme.
+function poly = calcul_contours(img, m, t)
+ym = m(1);
+xm = m(2);
+poly = []; % Tableau des points d'intersections, initialisé vide.
+
+% Boucle sur les angles
+for i = 1:length(t)
+    angle = t(i);
+    % Initialisation de x et y aux coordonnées du barycentre.
+    x = xm*1;
+    y = ym*1;
+    % Boucle de détection des points formant le contours.
+    while (round(x) < size(img,1) && round(y) < size(img,2) && round(x) > 0 && round(y) > 0 && img(round(x),round(y)))
+        x = x + cos(angle);
+        y = y + sin(angle);
+    end
+    poly = [poly; y,x]; % Ajout du point à la forme.
+end
 end
