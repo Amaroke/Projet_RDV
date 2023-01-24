@@ -50,14 +50,14 @@ end
 end
 
 function [fd, r, m, poly] = compute_fd(img)
-N = 1000; % N valeurs d'un angle t.
-M = N; % M premiers coefficients du vecteur |R(f)|/|R(0)|.
+N = 256; % N valeurs d'un angle t.
+M = 32; % M premiers coefficients du vecteur |R(f)|/|R(0)|.
 h = size(img, 1); % Hauteur de l'image, nombre de lignes.
 w = size(img, 2); % Largeur de l'image, nombre de colonnes.
 m = calcul_barycentre(img, h, w); % Barycentre de l'image.
 t = linspace(0, 2 * pi, N); % Génération des angles à parcourir.
 poly = calcul_contours(img, m, t); % Contours de l'image.
-r = calcul_profil(m, poly);
+r = pdist2(m, poly); % Calcul du profil de la forme.
 fd = calcul_descripteur(r, M);
 end
 
@@ -104,19 +104,9 @@ for i = 1:length(t)
 end
 end
 
-% Calcul du profil de la forme.
-function r = calcul_profil(m, poly)
-r = [];
-for i = 1:length(poly)
-    r = [r; norm(m - poly(i))];
-end
-end
-
 % Calcul du descripteur de fourrier.
 function fd = calcul_descripteur(r, M)
-Rf = fft(r);
-fd = [];
-for i = 1:M
-    fd = [fd; Rf(i)/Rf(1)];
-end
+R = fft(r);
+vecteur = abs(R)/abs(R(1));
+fd = vecteur(1:M);
 end
