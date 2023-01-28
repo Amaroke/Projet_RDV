@@ -50,8 +50,8 @@ end
 end
 
 function [fd, r, m, poly] = compute_fd(img)
-N = 256; % N valeurs d'un angle t.
-M = 32; % M premiers coefficients du vecteur |R(f)|/|R(0)|.
+N = 240; % N valeurs d'un angle t.
+M = 30; % M premiers coefficients du vecteur |R(f)|/|R(0)|.
 h = size(img, 1); % Hauteur de l'image, nombre de lignes.
 w = size(img, 2); % Largeur de l'image, nombre de colonnes.
 m = calcul_barycentre(img, h, w); % Barycentre de l'image.
